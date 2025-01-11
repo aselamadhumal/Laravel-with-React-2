@@ -8,38 +8,32 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the students.
-     */
+    // List all students
     public function index()
     {
         $students = Student::all();
-        return response()->json($students, 200);
+        return response()->json($students);
     }
 
-    /**
-     * Store a newly created student in storage.
-     */
+    // Store a new student
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // Validate the incoming data
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'course' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email',
-            'phone' => 'required|string|max:15',
+            'course' => 'required|string|max:255',
+            'phone' => 'required|digits:10',
         ]);
 
-        $student = Student::create($validated);
+        // Create and store the student
+        $student = Student::create($validatedData);
 
-        return response()->json([
-            'message' => 'Student created successfully',
-            'student' => $student
-        ], 201);
+        // Return the created student with a 201 status code
+        return response()->json($student, 201);
     }
 
-    /**
-     * Display the specified student.
-     */
+    // Show a specific student
     public function show($id)
     {
         $student = Student::find($id);
@@ -48,59 +42,33 @@ class StudentController extends Controller
             return response()->json(['message' => 'Student not found'], 404);
         }
 
-        return response()->json($student, 200);
+        return response()->json($student);
     }
 
-    /**
-     * Update the specified student in storage.
-     */
-    public function edit($id)
-    {
-        $student = Student::find($id);
-        if ($student) {
-            return response()->json([
-                
-                'status'=> 200,
-                'student' => $student
-            ],200);
-        
-        }else{
-            return response()->json([
-                'status'=> 404,
-                'message' => 'Student not found'
-            ], 404);
-        }
-    }
-
+    // Update a student's information
     public function update(Request $request, $id)
     {
+        // Validate the incoming data
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:students,email,' . $id,
+            'course' => 'required|string|max:255',
+            'phone' => 'required|digits:10',
+        ]);
+
         $student = Student::find($id);
 
         if (!$student) {
             return response()->json(['message' => 'Student not found'], 404);
         }
 
-        // Validate the incoming data
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'course' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:students,email,' . $id,
-            'phone' => 'sometimes|string|max:15',
-        ]);
+        // Update student
+        $student->update($validatedData);
 
-        // Update the student with the validated data
-        $student->update($validated);
-
-        return response()->json([
-            'message' => 'Student updated successfully',
-            'student' => $student
-        ], 200);
+        return response()->json($student);
     }
 
-
-    /**
-     * Remove the specified student from storage.
-     */
+    // Delete a student
     public function destroy($id)
     {
         $student = Student::find($id);
@@ -109,8 +77,9 @@ class StudentController extends Controller
             return response()->json(['message' => 'Student not found'], 404);
         }
 
+        // Delete the student
         $student->delete();
 
-        return response()->json(['message' => 'Student deleted successfully'], 200);
+        return response()->json(['message' => 'Student deleted successfully']);
     }
 }
